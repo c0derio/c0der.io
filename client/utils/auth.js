@@ -6,17 +6,20 @@ import base64url from 'base64url';
 const NONCE_SESSION_NAME = 'AUTH0_LAST_NONCE';
 
 /** Sync */
-const getNonce = () => {
+const getNonce = (returnTo) => {
   const nonce = base64url(crypto.randomBytes(64));
-  sessionStorage.setItem(NONCE_SESSION_NAME, nonce);
+  sessionStorage.setItem(NONCE_SESSION_NAME, JSON.stringify({
+      nonce: nonce,
+      returnTo: returnTo
+    }));
   return nonce;
 };
 
 const checkNonce = (nonce) => {
-  const storedNonce = sessionStorage.getItem(NONCE_SESSION_NAME);
-  const success = nonce === storedNonce;
+  const storedNonceObj = JSON.parse(sessionStorage.getItem(NONCE_SESSION_NAME));
+  const success = nonce === storedNonceObj.nonce;
   sessionStorage.setItem(NONCE_SESSION_NAME, '');
-  return success;
+  return success && storedNonceObj.returnTo;
 };
 
 let auth0Instance = null;
@@ -35,33 +38,43 @@ const getAuth0 = () => {
 export const getBaseUrl = (location) => {
   const fullUrl = window.location.href;
   const index = fullUrl.indexOf(location.pathname);
-  return fullUrl.substr(0,index);
+  return fullUrl.substr(0, index);
 };
 
-export const parseHash = (hash) => {
-  // initialize auth0
+const processAuthResult = (authResult) => {
   const webAuth = getAuth0();
-
   const getUserInfo = Promise.promisify(webAuth.client.userInfo, { context: webAuth.client });
-  const parseHashPromise = Promise.promisify(webAuth.parseHash, { context: webAuth });
-  return parseHashPromise(hash)
-    .then((authResult) => {
-      localStorage.setItem('apiToken', authResult.accessToken);
-      /* Validate state */
-      const state = JSON.parse(atob(authResult.state));
-      if (!checkNonce(state.nonce)) throw new Error("Bad State");
 
-      /* TODO: Validate ID token */
-      /* TODO: Validate that returnTo is local */
-      return { accessToken: authResult.accessToken, idToken: authResult.idToken, returnTo: state.returnTo };
-    })
+  console.log("Processing auth result: ", authResult);
+
+  return new Promise((resolve, reject) => {
+    /* Validate state */
+    const state = authResult.state;
+    const returnTo = checkNonce(state);
+    if (!returnTo) return reject( new Error('The state is not a valid state, please' +
+    ' re-initiate login'));
+
+    localStorage.setItem('apiToken', authResult.accessToken);
+
+    /* TODO: Validate ID token */
+    return resolve({ accessToken: authResult.accessToken, idToken: authResult.idToken, returnTo: returnTo, expiresIn: authResult.expiresIn });
+  })
     .then(tokens => getUserInfo(tokens.accessToken)
       .then((user) => {
         // Now you have the user's information
         localStorage.setItem('profile', user);
         return tokens;
-      })
-    );
+      }));
+
+};
+
+export const parseHash = (hash) => {
+  // initialize auth0
+  const webAuth = getAuth0();
+  const parseHashPromise = Promise.promisify(webAuth.parseHash, { context: webAuth });
+
+  return parseHashPromise(hash)
+    .then((authResult) => processAuthResult(authResult));
 };
 
 export const a0Logout = (location) => {
@@ -75,26 +88,37 @@ export const redirect = (location, state, prompt) => {
     throw new Error('Unable to create webAuth.');
   }
 
-  const nonce = getNonce();
 
   // TODO, should we be validating the state nonce here?
-  const stateDecoded = state && JSON.parse(atob(state));
-  const targetState = { returnTo: (stateDecoded && stateDecoded.returnTo) || (location.query && location.query.returnUrl), nonce: nonce };
+  let returnTo = (location && location.query && location.query.returnUrl) || '/';
+  if (state) {
+    returnTo = checkNonce(state);
+  }
+
+  const nonce = getNonce(returnTo);
 
   /* Get base URL */
 
   const options = {
-    redirect_uri: getBaseUrl(location) + "/login",
+    redirectUri: getBaseUrl(location) + "/login",
     responseType: 'token id_token',
     audience: window.config.C0DERIO_AUDIENCE,
-    state: btoa(JSON.stringify(targetState)),
+    state: nonce,
     scope: 'openid profile email read:users read:achievements read:projects',
     nonce: nonce
   };
 
-  if (prompt) options.prompt = prompt;
+  if (prompt) {
+    // options.usePostMessage = true;
+    options.redirectUri = 'http://c0der.local:3001/silent-callback';
 
-  console.log("Carlos, options: ", options, ", prompt=", prompt);
+    const renewAuth = Promise.promisify(webAuth.renewAuth, { context: webAuth });
+
+    return renewAuth(options)
+      .then((authResult) => {
+        return processAuthResult(authResult);
+      });
+  }
 
   webAuth.authorize(options);
 };

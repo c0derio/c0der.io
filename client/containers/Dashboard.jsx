@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import { connect } from 'react-redux';
 
 import { LoadingPanel, Error } from '../components/Dashboard';
+import ProjectsTable from '../components/Projects/ProjectsTable';
 
 import './Dashboard.css';
 
@@ -13,7 +14,8 @@ class Dashboard extends Component {
     errorProfile: React.PropTypes.string,
     errorProjects: React.PropTypes.string,
     errorAchievements: React.PropTypes.string,
-    profile: React.PropTypes.object
+    profile: React.PropTypes.object,
+    projects: React.PropTypes.array
   };
 
   constructor(props) {
@@ -21,17 +23,12 @@ class Dashboard extends Component {
   }
 
   render() {
-    console.log("Carlos rendering dashboard");
     const { loadingProfile, errorProfile, loadingProjects, errorProjects, loadingAchievements, errorAchievements } = this.props;
 
     const loading = loadingAchievements || loadingProfile || loadingProjects;
 
     const profile = this.props.profile || {};
-
-    console.log("Carlos rendering dashboard, profile: ", this.props.profile);
-    console.log("Carlos rendering dashboard, errorProfile: ", errorProfile);
-    console.log("Carlos rendering dashboard, errorProjects: ", errorProjects);
-    console.log("Carlos rendering dashboard, errorAchievements: ", errorAchievements);
+    const projects = this.props.projects || [];
 
     if (!profile) return (<div>1</div>);
 
@@ -63,6 +60,12 @@ class Dashboard extends Component {
               Profile: {JSON.stringify(profile)}
             </div>
           </div>
+          <div className="row">
+            <h3>Projects</h3>
+            <div className="col-xs-12 wrapper">
+              <ProjectsTable projects={projects} />
+            </div>
+          </div>
         </LoadingPanel>
       </div>
     );
@@ -77,7 +80,8 @@ function mapStateToProps(state) {
     loadingAchievements: state.achievements.get('loading'),
     errorProfile: state.profile.get('error'),
     loadingProfile: state.profile.get('loading'),
-    profile: state.profile.get('record').toJS()
+    profile: state.profile.get('record').toJS(),
+    projects: state.projects.get('records').toJS()
   };
 }
 

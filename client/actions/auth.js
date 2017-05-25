@@ -5,12 +5,96 @@ import { routeActions } from 'redux-simple-router';
 import * as constants from '../constants';
 import { redirect, parseHash, a0Logout } from '../utils/auth';
 
-export function login(location, prompt) {
-  redirect(location, null, prompt);
+const handleTokens = (dispatch, getTokensPromise, location) => {
+  return getTokensPromise.then(tokens => {
+      if (!tokens) {
+        /* Must be a bad authorization */
+        dispatch({
+          type: constants.LOGIN_FAILED,
+          payload: {
+            error: 'Unauthorized'
+          }
+        });
+        return dispatch(routeActions.push('/login'));
+      }
 
-  return {
-    type: constants.REDIRECT_LOGIN
-  };
+      const idToken = tokens.idToken;
+      const accessToken = tokens.accessToken;
+      const decodedToken = jwtDecode(idToken);
+      if (isExpired(decodedToken)) {
+        dispatch({
+          type: constants.LOGIN_FAILED,
+          payload: {
+            error: 'Expired Token'
+          }
+        });
+        return dispatch(routeActions.push('/login'));
+      }
+
+      const decodedAccessToken = jwtDecode(accessToken);
+      if (isExpired(decodedAccessToken)) {
+        dispatch({
+          type: constants.LOGIN_FAILED,
+          payload: {
+            error: 'Expired Token'
+          }
+        });
+        return dispatch(routeActions.push('/login'));
+      }
+
+      axios.defaults.headers.common.Authorization = `Bearer ${accessToken}`;
+
+      // dispatch({
+      //   type: constants.LOADED_TOKEN,
+      //   payload: {
+      //     token: idToken
+      //   }
+      // });
+
+      dispatch({
+        type: constants.LOGIN_SUCCESS,
+        payload: {
+          token: idToken,
+          decodedToken,
+          user: decodedToken,
+          returnTo: tokens.returnTo
+        }
+      });
+
+      return dispatch(routeActions.push(tokens.returnTo));
+    }
+  ).catch((err) => {
+    console.debug("Error Loading Credentials: ", err);
+    if (err.error) {
+      /* Check for login_required, otherwise just fail */
+      if (err.error === 'login_required') {
+        redirect(location, err.state); // do NOT pass 'none' for prompt
+      } else {
+        return dispatch({
+          type: constants.LOGIN_FAILED,
+          payload: {
+            error: `${err.error}: ${err.error_description}`
+          }
+        });
+      }
+    } else {
+      return dispatch({
+        type: constants.LOGIN_FAILED,
+        payload: {
+          error: err.message
+        }
+      });
+    }
+  });
+};
+
+export function login(location, prompt) {
+  return (dispatch) => {
+    dispatch({
+      type: constants.LOGIN_PENDING
+    });
+    return handleTokens(dispatch, redirect(location, null, prompt), location);
+  }
 }
 
 function isExpired(decodedToken) {
@@ -44,78 +128,7 @@ export function loadCredentials(location) {
       dispatch({
         type: constants.LOGIN_PENDING
       });
-      parseHash(window.location.hash)
-        .then((tokens) => {
-          if (!tokens) {
-            /* Must be a bad authorization */
-            dispatch({
-              type: constants.LOGIN_FAILED,
-              payload: {
-                error: 'Unauthorized'
-              }
-            });
-            return dispatch(routeActions.push('/login'));
-          }
-
-          const idToken = tokens.idToken;
-          const accessToken = tokens.accessToken;
-          const decodedToken = jwtDecode(idToken);
-          if (isExpired(decodedToken)) {
-            dispatch({
-              type: constants.LOGIN_FAILED,
-              payload: {
-                error: 'Expired Token'
-              }
-            });
-            return dispatch(routeActions.push('/login'));
-          }
-
-          const decodedAccessToken = jwtDecode(accessToken);
-          if (isExpired(decodedAccessToken)) {
-            dispatch({
-              type: constants.LOGIN_FAILED,
-              payload: {
-                error: 'Expired Token'
-              }
-            });
-            return dispatch(routeActions.push('/login'));
-          }
-
-          axios.defaults.headers.common.Authorization = `Bearer ${accessToken}`;
-
-          // dispatch({
-          //   type: constants.LOADED_TOKEN,
-          //   payload: {
-          //     token: idToken
-          //   }
-          // });
-
-          dispatch({
-            type: constants.LOGIN_SUCCESS,
-            payload: {
-              token: idToken,
-              decodedToken,
-              user: decodedToken,
-              returnTo: tokens.returnTo
-            }
-          });
-
-          return dispatch(routeActions.push(tokens.returnTo));
-        }).catch((err) => {
-          if (err.error) {
-            /* Check for login_required, otherwise just fail */
-            if (err.error === 'login_required') {
-              redirect(location, err.state); // do NOT pass 'none' for prompt
-            } else {
-              return dispatch({
-                type: constants.LOGIN_FAILED,
-                payload: {
-                  error: `${err.error}: ${err.error_description}`
-                }
-              });
-            }
-          }
-      });
+      return handleTokens(dispatch, parseHash(window.location.hash), location);
     }
   };
 }

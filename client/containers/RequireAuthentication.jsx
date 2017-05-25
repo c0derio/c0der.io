@@ -10,17 +10,14 @@ export default function RequireAuthentication(InnerComponent) {
     }
 
     componentWillMount() {
-      console.log("Carlos: will mount", this.props.auth);
       this.requireAuthentication();
     }
 
     componentWillReceiveProps() {
-      console.log("Carlos: will receive props", this.props.auth);
       this.requireAuthentication();
     }
 
     requireAuthentication() {
-      console.log("Carlos: Requiring authentication", this.props.auth);
       if (!this.props.auth.isAuthenticated && !this.props.auth.isAuthenticating) {
         if (!this.props.location) {
           this.props.router.push('/login');

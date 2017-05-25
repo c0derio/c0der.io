@@ -30,7 +30,6 @@ class App extends Component {
   }
 
   logout() {
-    console.log('Carlos: logout');
     this.props.logout(this.props.location);
   }
 

@@ -17,14 +17,13 @@ class Projects extends Component {
   }
 
   render() {
-    console.log("Carlos rendering projects");
     const { error, loading, projects } = this.props;
 
     return (
       <div className="dashboard">
         <div className="row content-header">
           <div className="col-xs-12 order-table-content">
-            <h1>Dashboard</h1>
+            <h1>Projects</h1>
           </div>
         </div>
         <LoadingPanel show={loading}>
