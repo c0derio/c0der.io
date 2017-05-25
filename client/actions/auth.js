@@ -5,8 +5,10 @@ import { routeActions } from 'redux-simple-router';
 import * as constants from '../constants';
 import { redirect, parseHash, a0Logout } from '../utils/auth';
 
-const handleTokens = (dispatch, getTokensPromise, location) => {
-  return getTokensPromise.then(tokens => {
+const handleTokens = (dispatch, getTokensPromise, location, refreshing) => {
+  return getTokensPromise
+    .then(tokens => {
+
       if (!tokens) {
         /* Must be a bad authorization */
         dispatch({
@@ -34,28 +36,43 @@ const handleTokens = (dispatch, getTokensPromise, location) => {
       const decodedAccessToken = jwtDecode(accessToken);
       if (isExpired(decodedAccessToken)) {
         dispatch({
-          type: constants.LOGIN_FAILED,
-          payload: {
-            error: 'Expired Token'
-          }
+          type: constants.LOGIN_FAILED
         });
         return dispatch(routeActions.push('/login'));
       }
 
       axios.defaults.headers.common.Authorization = `Bearer ${accessToken}`;
 
-      // dispatch({
-      //   type: constants.LOADED_TOKEN,
-      //   payload: {
-      //     token: idToken
-      //   }
-      // });
+      const expiresIn = tokens.expiresIn || 10;
+      let timeout = (expiresIn * 1000) - 60000;
+      if (timeout < 10000) timeout = 10000; /* refresh only every 10 seconds at the most */
+      console.log('Carlos, timeout: ', timeout, ', tokens: ', tokens);
+      setTimeout(() => {
+        dispatch({
+          type: constants.REFRESH_PENDING
+        });
+        return handleTokens(dispatch, redirect(location, null, prompt), location, true /* refreshing only */);
+      }, timeout);
+      
+      if (refreshing) {
+        return dispatch({
+          type: constants.LOGIN_SUCCESS,
+          payload: {
+            idToken: idToken,
+            accessToken: accessToken,
+            decodedToken: decodedToken,
+            user: decodedToken,
+            returnTo: tokens.returnTo
+          }
+        });
+      }
 
       dispatch({
         type: constants.LOGIN_SUCCESS,
         payload: {
-          token: idToken,
-          decodedToken,
+          idToken: idToken,
+          accessToken: accessToken,
+          decodedToken: decodedToken,
           user: decodedToken,
           returnTo: tokens.returnTo
         }
@@ -64,7 +81,7 @@ const handleTokens = (dispatch, getTokensPromise, location) => {
       return dispatch(routeActions.push(tokens.returnTo));
     }
   ).catch((err) => {
-    console.debug("Error Loading Credentials: ", err);
+    console.error("Error Loading Credentials: ", err);
     if (err.error) {
       /* Check for login_required, otherwise just fail */
       if (err.error === 'login_required') {

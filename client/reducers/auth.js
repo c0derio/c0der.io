@@ -6,14 +6,19 @@ import createReducer from '../utils/createReducer';
 
 const initialState = {
   error: null,
+  isRefreshing: false,
   isAuthenticated: false,
   isAuthenticating: false,
   issuer: null,
-  token: null,
-  decodedToken: null,
+  idToken: null,
+  accessToken: null,
   user: null,
   returnTo: null
 };
+
+const setTokens = (state, action) => {
+
+}
 
 export default createReducer(fromJS(initialState), {
   [constants.LOGIN_PENDING]: state =>
@@ -24,17 +29,24 @@ export default createReducer(fromJS(initialState), {
   [constants.LOGIN_FAILED]: (state, action) =>
     state.merge({
       isAuthenticating: false,
+      isRefreshing: false,
+      isAuthenticated: false,
       error: action.payload.error || 'Unknown Error'
     }),
   [constants.LOGIN_SUCCESS]: (state, action) =>
     state.merge({
+      isRefreshing: false,
       isAuthenticated: true,
       isAuthenticating: false,
       user: action.payload.user,
-      token: action.payload.token,
-      decodedToken: action.payload.decodedToken,
+      idToken: action.payload.idToken,
+      accessToken: action.payload.accessToken,
       issuer: url.parse(action.payload.decodedToken.iss).hostname,
       returnTo: action.payload.returnTo
+    }),
+  [constants.REFRESH_PENDING]: state =>
+    state.merge({
+      isRefreshing: true
     }),
   [constants.LOGOUT_PENDING]: (state, action) =>
     state.merge({

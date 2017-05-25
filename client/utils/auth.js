@@ -45,8 +45,6 @@ const processAuthResult = (authResult) => {
   const webAuth = getAuth0();
   const getUserInfo = Promise.promisify(webAuth.client.userInfo, { context: webAuth.client });
 
-  console.log("Processing auth result: ", authResult);
-
   return new Promise((resolve, reject) => {
     /* Validate state */
     const state = authResult.state;
