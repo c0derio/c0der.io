@@ -9,9 +9,9 @@ const NONCE_SESSION_NAME = 'AUTH0_LAST_NONCE';
 const getNonce = (returnTo) => {
   const nonce = base64url(crypto.randomBytes(64));
   sessionStorage.setItem(NONCE_SESSION_NAME, JSON.stringify({
-      nonce: nonce,
-      returnTo: returnTo
-    }));
+    nonce,
+    returnTo
+  }));
   return nonce;
 };
 
@@ -49,13 +49,14 @@ const processAuthResult = (authResult) => {
     /* Validate state */
     const state = authResult.state;
     const returnTo = checkNonce(state);
-    if (!returnTo) return reject( new Error('The state is not a valid state, please' +
-    ' re-initiate login'));
+    if (!returnTo) {
+      return reject(new Error('The state is not a valid state, please re-initiate login'));
+    }
 
     localStorage.setItem('apiToken', authResult.accessToken);
 
     /* TODO: Validate ID token */
-    return resolve({ accessToken: authResult.accessToken, idToken: authResult.idToken, returnTo: returnTo, expiresIn: authResult.expiresIn });
+    return resolve({ accessToken: authResult.accessToken, idToken: authResult.idToken, returnTo, expiresIn: authResult.expiresIn });
   })
     .then(tokens => getUserInfo(tokens.accessToken)
       .then((user) => {
@@ -63,7 +64,6 @@ const processAuthResult = (authResult) => {
         localStorage.setItem('profile', user);
         return tokens;
       }));
-
 };
 
 export const parseHash = (hash) => {
@@ -72,7 +72,7 @@ export const parseHash = (hash) => {
   const parseHashPromise = Promise.promisify(webAuth.parseHash, { context: webAuth });
 
   return parseHashPromise(hash)
-    .then((authResult) => processAuthResult(authResult));
+    .then(authResult => processAuthResult(authResult));
 };
 
 export const a0Logout = (location) => {
@@ -98,12 +98,12 @@ export const redirect = (location, state, prompt) => {
   /* Get base URL */
 
   const options = {
-    redirectUri: getBaseUrl(location) + "/login",
+    redirectUri: `${getBaseUrl(location)}/login`,
     responseType: 'token id_token',
     audience: window.config.C0DERIO_AUDIENCE,
     state: nonce,
     scope: 'openid profile email read:users read:achievements read:projects',
-    nonce: nonce
+    nonce
   };
 
   if (prompt) {
@@ -113,9 +113,7 @@ export const redirect = (location, state, prompt) => {
     const renewAuth = Promise.promisify(webAuth.renewAuth, { context: webAuth });
 
     return renewAuth(options)
-      .then((authResult) => {
-        return processAuthResult(authResult);
-      });
+      .then(authResult => processAuthResult(authResult));
   }
 
   webAuth.authorize(options);

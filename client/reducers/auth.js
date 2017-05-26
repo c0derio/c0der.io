@@ -18,7 +18,7 @@ const initialState = {
 
 const setTokens = (state, action) => {
 
-}
+};
 
 export default createReducer(fromJS(initialState), {
   [constants.LOGIN_PENDING]: state =>

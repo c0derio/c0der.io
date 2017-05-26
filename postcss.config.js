@@ -1,10 +1,16 @@
+const postCssVars = require('postcss-simple-vars');
+const postCssFocus = require('postcss-focus');
+const postCssReporter = require('postcss-reporter');
+const autoprefixer = require('autoprefixer');
+
+
 module.exports = [
-  require('postcss-simple-vars')(),
-  require('postcss-focus')(),
-  require('autoprefixer')({
-    browsers: ['last 2 versions', 'IE > 8']
+  postCssVars(),
+  postCssFocus(),
+  autoprefixer({
+    browsers: [ 'last 2 versions', 'IE > 8' ]
   }),
-  require('postcss-reporter')({
+  postCssReporter({
     clearMessages: true
   })
 ];

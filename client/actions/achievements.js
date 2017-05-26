@@ -1,8 +1,6 @@
-import axios from 'axios';
 import * as constants from '../constants';
 
-
-export function fetchAchievements(userId) {
+export default function fetchAchievements(userId) {
   const baseUrl = window.config.BASE_API_URL;
 
   return {
@@ -11,7 +9,7 @@ export function fetchAchievements(userId) {
       // promise: axios.get(`${baseUrl}/api/users/${userId}`, {
       //   responseType: 'json'
       // })
-      promise: new Promise((resolve) => resolve({ data: [{name: 'achievement1'}, {name: 'achievement2'}]}))
+      promise: new Promise(resolve => resolve({ data: [ { name: 'achievement1' }, { name: 'achievement2' } ] }))
     }
   };
 }

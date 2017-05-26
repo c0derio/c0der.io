@@ -2,7 +2,7 @@ import axios from 'axios';
 import * as constants from '../constants';
 
 
-export function fetchProfile(userId) {
+export default function fetchProfile(userId) {
   const baseUrl = window.config.BASE_API_URL;
 
   return {
