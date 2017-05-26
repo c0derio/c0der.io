@@ -8,10 +8,10 @@ export function fetchProfile(userId) {
   return {
     type: constants.FETCH_PROFILE,
     payload: {
-      // promise: axios.get(`${baseUrl}/api/users/${userId}`, {
-      //   responseType: 'json'
-      // })
-      promise: new Promise((resolve) => resolve({ data: {username: 'some username'}}))
+      promise: axios.get(`${baseUrl}/api/users/${userId}`, {
+        responseType: 'json'
+      })
+      // promise: new Promise((resolve) => resolve({ data: {username: 'some username'}}))
     }
   };
 }

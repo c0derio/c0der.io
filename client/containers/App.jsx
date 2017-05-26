@@ -24,9 +24,10 @@ class App extends Component {
   }
 
   componentWillMount() {
-    this.props.fetchProfile(this.props.user.sub);
-    this.props.fetchAchievements(this.props.user.sub);
-    this.props.fetchProjects(this.props.user.sub);
+    const sub = this.props.user.get('sub');
+    this.props.fetchProfile(sub);
+    this.props.fetchAchievements(sub);
+    this.props.fetchProjects(sub);
   }
 
   logout() {

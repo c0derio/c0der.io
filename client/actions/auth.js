@@ -9,53 +9,87 @@ const handleTokens = (dispatch, getTokensPromise, location, refreshing) => {
   return getTokensPromise
     .then(tokens => {
 
-      if (!tokens) {
-        /* Must be a bad authorization */
-        dispatch({
-          type: constants.LOGIN_FAILED,
-          payload: {
-            error: 'Unauthorized'
+        if (!tokens) {
+          /* Must be a bad authorization */
+          dispatch({
+            type: constants.LOGIN_FAILED,
+            payload: {
+              error: 'Unauthorized'
+            }
+          });
+          return dispatch(routeActions.push('/login'));
+        }
+
+        const idToken = tokens.idToken;
+        const accessToken = tokens.accessToken;
+        const decodedToken = jwtDecode(idToken);
+        if (isExpired(decodedToken)) {
+          dispatch({
+            type: constants.LOGIN_FAILED,
+            payload: {
+              error: 'Expired Token'
+            }
+          });
+          return dispatch(routeActions.push('/login'));
+        }
+
+        const decodedAccessToken = jwtDecode(accessToken);
+        if (isExpired(decodedAccessToken)) {
+          dispatch({
+            type: constants.LOGIN_FAILED
+          });
+          return dispatch(routeActions.push('/login'));
+        }
+
+        axios.defaults.headers.common.Authorization = `Bearer ${accessToken}`;
+
+        axios.interceptors.response.use((response) => response, (error) => {
+          let value = error.response;
+
+          if (value.status === 401 && value.data.message === 'TokenExpired') {
+            console.log('Token JWT expired, renew...');
+
+            dispatch({
+              type: constants.REFRESH_PENDING
+            });
+
+            // renewToken performs authentication using username/password saved in sessionStorage/localStorage
+            return handleTokens(dispatch, redirect(location, null, prompt), location, true /* refreshing only */)
+              .then(() => {
+                console.log('Re-sending the request...', error.config);
+                error.config.headers.Authorization = axios.defaults.headers.common.Authorization;
+                return axios.request(error.config);
+              });
           }
-        });
-        return dispatch(routeActions.push('/login'));
-      }
 
-      const idToken = tokens.idToken;
-      const accessToken = tokens.accessToken;
-      const decodedToken = jwtDecode(idToken);
-      if (isExpired(decodedToken)) {
+          return Promise.reject(error);
+        });
+
+        // const expiresIn = tokens.expiresIn || 10;
+        // let timeout = (expiresIn * 1000) - 60000;
+        // if (timeout < 10000) timeout = 10000; /* refresh only every 10 seconds at the most */
+        // console.log('Carlos, timeout: ', timeout, ', tokens: ', tokens);
+        // setTimeout(() => {
+        //   dispatch({
+        //     type: constants.REFRESH_PENDING
+        //   });
+        //   return handleTokens(dispatch, redirect(location, null, prompt), location, true /* refreshing only */);
+        // }, timeout);
+
+        if (refreshing) {
+          return dispatch({
+            type: constants.LOGIN_SUCCESS,
+            payload: {
+              idToken: idToken,
+              accessToken: accessToken,
+              decodedToken: decodedToken,
+              user: decodedToken,
+              returnTo: tokens.returnTo
+            }
+          });
+        }
+
         dispatch({
-          type: constants.LOGIN_FAILED,
-          payload: {
-            error: 'Expired Token'
-          }
-        });
-        return dispatch(routeActions.push('/login'));
-      }
-
-      const decodedAccessToken = jwtDecode(accessToken);
-      if (isExpired(decodedAccessToken)) {
-        dispatch({
-          type: constants.LOGIN_FAILED
-        });
-        return dispatch(routeActions.push('/login'));
-      }
-
-      axios.defaults.headers.common.Authorization = `Bearer ${accessToken}`;
-
-      const expiresIn = tokens.expiresIn || 10;
-      let timeout = (expiresIn * 1000) - 60000;
-      if (timeout < 10000) timeout = 10000; /* refresh only every 10 seconds at the most */
-      console.log('Carlos, timeout: ', timeout, ', tokens: ', tokens);
-      setTimeout(() => {
-        dispatch({
-          type: constants.REFRESH_PENDING
-        });
-        return handleTokens(dispatch, redirect(location, null, prompt), location, true /* refreshing only */);
-      }, timeout);
-      
-      if (refreshing) {
-        return dispatch({
           type: constants.LOGIN_SUCCESS,
           payload: {
             idToken: idToken,
@@ -65,44 +99,32 @@ const handleTokens = (dispatch, getTokensPromise, location, refreshing) => {
             returnTo: tokens.returnTo
           }
         });
+
+        return dispatch(routeActions.push(tokens.returnTo));
       }
-
-      dispatch({
-        type: constants.LOGIN_SUCCESS,
-        payload: {
-          idToken: idToken,
-          accessToken: accessToken,
-          decodedToken: decodedToken,
-          user: decodedToken,
-          returnTo: tokens.returnTo
+    ).catch((err) => {
+      console.error("Error Loading Credentials: ", err);
+      if (err.error) {
+        /* Check for login_required, otherwise just fail */
+        if (err.error === 'login_required') {
+          redirect(location, err.state); // do NOT pass 'none' for prompt
+        } else {
+          return dispatch({
+            type: constants.LOGIN_FAILED,
+            payload: {
+              error: `${err.error}: ${err.error_description}`
+            }
+          });
         }
-      });
-
-      return dispatch(routeActions.push(tokens.returnTo));
-    }
-  ).catch((err) => {
-    console.error("Error Loading Credentials: ", err);
-    if (err.error) {
-      /* Check for login_required, otherwise just fail */
-      if (err.error === 'login_required') {
-        redirect(location, err.state); // do NOT pass 'none' for prompt
       } else {
         return dispatch({
           type: constants.LOGIN_FAILED,
           payload: {
-            error: `${err.error}: ${err.error_description}`
+            error: err.message
           }
         });
       }
-    } else {
-      return dispatch({
-        type: constants.LOGIN_FAILED,
-        payload: {
-          error: err.message
-        }
-      });
-    }
-  });
+    });
 };
 
 export function login(location, prompt) {

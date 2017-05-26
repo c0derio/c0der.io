@@ -2,6 +2,8 @@ import React, { Component } from 'react';
 import { connect } from 'react-redux';
 
 import { LoadingPanel, Error } from '../components/Dashboard';
+import { userActions } from '../actions';
+
 
 import './Dashboard.css';
 
@@ -9,11 +11,16 @@ class Profile extends Component {
   static propTypes = {
     loading: React.PropTypes.bool,
     error: React.PropTypes.string,
-    profile: React.PropTypes.object
+    profile: React.PropTypes.object,
+    fetchProfile: React.PropTypes.func.isRequired
   };
 
   constructor(props) {
     super(props);
+  }
+
+  componentWillMount() {
+    this.props.fetchProfile(this.props.profile.id);
   }
 
   render() {
@@ -51,4 +58,4 @@ function mapStateToProps(state) {
   };
 }
 
-export default connect(mapStateToProps)(Profile);
+export default connect(mapStateToProps, { ...userActions })(Profile);
