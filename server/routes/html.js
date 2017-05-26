@@ -1,6 +1,5 @@
 import fs from 'fs';
 import ejs from 'ejs';
-import path from 'path';
 import { urlHelpers } from 'auth0-extension-express-tools';
 
 import config from '../lib/config';

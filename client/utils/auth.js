@@ -77,7 +77,7 @@ export const parseHash = (hash) => {
 
 export const a0Logout = (location) => {
   const webAuth = getAuth0();
-  webAuth.logout({ returnTo: getBaseUrl(location) });
+  return webAuth.logout({ returnTo: getBaseUrl(location) });
 };
 
 export const redirect = (location, state, prompt) => {
@@ -116,5 +116,5 @@ export const redirect = (location, state, prompt) => {
       .then(authResult => processAuthResult(authResult));
   }
 
-  webAuth.authorize(options);
+  return webAuth.authorize(options);
 };

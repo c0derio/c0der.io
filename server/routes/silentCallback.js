@@ -23,7 +23,7 @@ export default () => {
 
   `;
 
-  return (req, res, next) => {
+  return (req, res) => {
     // Render the html page.
     console.log(urlHelpers.getBaseUrl(req));
     return res.send(ejs.render(template, { baseUrl: 'http://c0der.local:3001', domain: config('AUTH0_DOMAIN'), clientId: config('AUTH0_CLIENT_ID') }));

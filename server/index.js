@@ -1,6 +1,6 @@
 import morgan from 'morgan';
 import Express from 'express';
-import forceSSL from 'express-force-ssl';
+// import forceSSL from 'express-force-ssl';
 
 import bodyParser from 'body-parser';
 import { middlewares } from 'auth0-extension-express-tools';
@@ -22,6 +22,7 @@ module.exports = (cfg) => {
   app.use(bodyParser.json());
   app.use(bodyParser.urlencoded({ extended: false }));
 
+  /*
   if (false && config('NODE_ENV') !== 'development') {
     app.set('forceSSLOptions', {
       enable301Redirects: true,
@@ -30,11 +31,12 @@ module.exports = (cfg) => {
       sslRequiredMessage: 'SSL Required.'
     });
 
-    app.use(function(req, res, next) {
+    app.use((req, res, next) => {
       if (!req.connection.encrypted) forceSSL(req, res, next);
       else next();
     });
   }
+  */
 
   // Configure routes.
 

@@ -1,7 +1,7 @@
 import * as constants from '../constants';
 
 export default function fetchAchievements(userId) {
-  const baseUrl = window.config.BASE_API_URL;
+  // const baseUrl = window.config.BASE_API_URL;
 
   return {
     type: constants.FETCH_ACHIEVEMENTS,
@@ -9,7 +9,7 @@ export default function fetchAchievements(userId) {
       // promise: axios.get(`${baseUrl}/api/users/${userId}`, {
       //   responseType: 'json'
       // })
-      promise: new Promise(resolve => resolve({ data: [ { name: 'achievement1' }, { name: 'achievement2' } ] }))
+      promise: new Promise(resolve => resolve({ data: [ { userId, name: 'achievement1' }, { userId, name: 'achievement2' } ] }))
     }
   };
 }

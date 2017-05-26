@@ -16,10 +16,6 @@ const initialState = {
   returnTo: null
 };
 
-const setTokens = (state, action) => {
-
-};
-
 export default createReducer(fromJS(initialState), {
   [constants.LOGIN_PENDING]: state =>
     state.merge({
@@ -48,7 +44,7 @@ export default createReducer(fromJS(initialState), {
     state.merge({
       isRefreshing: true
     }),
-  [constants.LOGOUT_PENDING]: (state, action) =>
+  [constants.LOGOUT_PENDING]: state =>
     state.merge({
       ...initialState,
       isAuthenticating: true,
@@ -59,7 +55,7 @@ export default createReducer(fromJS(initialState), {
       isAuthenticating: false,
       error: action.payload.error || 'Unknown Error'
     }),
-  [constants.LOGOUT_SUCCESS]: (state, action) =>
+  [constants.LOGOUT_SUCCESS]: state =>
     state.merge({
       isAuthenticating: false
     })

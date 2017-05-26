@@ -111,7 +111,8 @@ const handleTokens = (dispatch, getTokensPromise, location, refreshing) =>
       });
 
       return dispatch(routeActions.push(tokens.returnTo));
-    }).catch((err) => {
+    })
+    .catch((err) => {
       console.error('Error Loading Credentials: ', err);
       if (err.error) {
         /* Check for login_required, otherwise just fail */
@@ -125,14 +126,14 @@ const handleTokens = (dispatch, getTokensPromise, location, refreshing) =>
             }
           });
         }
-      } else {
-        return dispatch({
-          type: constants.LOGIN_FAILED,
-          payload: {
-            error: err.message
-          }
-        });
       }
+
+      return dispatch({
+        type: constants.LOGIN_FAILED,
+        payload: {
+          error: err.message
+        }
+      });
     });
 
 export function login(location, prompt) {
@@ -149,7 +150,7 @@ export function logout(location) {
     localStorage.removeItem('apiToken');
     sessionStorage.removeItem('apiToken');
 
-    dispatch({
+    return dispatch({
       type: constants.LOGOUT,
       payload: {
         promise: a0Logout(location)
@@ -166,6 +167,8 @@ export function loadCredentials(location) {
       });
       return handleTokens(dispatch, parseHash(window.location.hash), location);
     }
+
+    return Promise.resolve();
   };
 }
 

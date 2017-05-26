@@ -1,8 +1,6 @@
 const webpack = require('webpack');
 const WebpackDevServer = require('webpack-dev-server');
 
-console.log("hello");
-
 const config = require('./config.dev.js');
 const logger = require('../../server/lib/logger');
 
