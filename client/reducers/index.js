@@ -2,7 +2,7 @@ import { combineReducers } from 'redux';
 import { reducer as formReducer } from 'redux-form';
 import { routeReducer } from 'redux-simple-router';
 
-import auth from './auth';
+import auth from '../auth/reducers';
 import profile from './profile';
 import projects from './projects';
 import achievements from './achievements';

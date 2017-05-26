@@ -2,8 +2,8 @@ import axios from 'axios';
 import jwtDecode from 'jwt-decode';
 import { routeActions } from 'redux-simple-router';
 
-import * as constants from '../constants';
-import { redirect, parseHash, a0Logout } from '../utils/auth';
+import * as constants from './constants';
+import { redirect, parseHash, a0Logout } from './utils';
 
 function isExpired(decodedToken) {
   if (typeof decodedToken.exp === 'undefined') {

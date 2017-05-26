@@ -6,7 +6,7 @@ import { Provider } from 'react-redux';
 import { browserHistory } from 'react-router';
 import { routeActions, syncHistory } from 'redux-simple-router';
 
-import { loadCredentials } from './actions/auth';
+import { loadCredentials } from './auth/actions';
 import routes from './routes';
 import configureStore from './store/configureStore';
 import * as constants from './constants';

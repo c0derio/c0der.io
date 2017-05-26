@@ -1,8 +1,11 @@
 import React, { Component, PropTypes } from 'react';
 import { connect } from 'react-redux';
 
-import { logout } from '../actions/auth';
-import { authActions, userActions, achievementActions, projectActions } from '../actions';
+import fetchProfile from '../actions/users';
+import fetchAchievements from '../actions/achievements';
+import fetchProjects from '../actions/projects';
+
+import { logout } from '../auth/actions';
 
 import Header from '../components/Header';
 
@@ -25,6 +28,7 @@ class App extends Component {
 
   componentWillMount() {
     const sub = this.props.user.get('sub');
+    console.log("Carlos, sub: ", sub);
     this.props.fetchProfile(sub);
     this.props.fetchAchievements(sub);
     this.props.fetchProjects(sub);
@@ -63,4 +67,4 @@ function select(state) {
   };
 }
 
-export default connect(select, { logout, ...authActions, ...userActions, ...achievementActions, ...projectActions })(App);
+export default connect(select, { logout, fetchProfile, fetchAchievements, fetchProjects })(App);

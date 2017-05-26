@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import { connect } from 'react-redux';
 
 import { LoadingPanel, Error } from '../components/Dashboard';
-import { userActions } from '../actions';
+import fetchProfile from '../actions/users';
 
 
 import './Dashboard.css';
@@ -12,6 +12,7 @@ class Profile extends Component {
     loading: React.PropTypes.bool,
     error: React.PropTypes.string,
     profile: React.PropTypes.object,
+    user: React.PropTypes.object,
     fetchProfile: React.PropTypes.func.isRequired
   };
 
@@ -20,7 +21,8 @@ class Profile extends Component {
   }
 
   componentWillMount() {
-    this.props.fetchProfile(this.props.profile.id);
+    const sub = this.props.user.get('sub');
+    this.props.fetchProfile(sub);
   }
 
   render() {
@@ -54,8 +56,9 @@ function mapStateToProps(state) {
   return {
     error: state.profile.get('error'),
     loading: state.profile.get('loading'),
-    profile: state.profile.get('record').toJS()
+    profile: state.profile.get('record').toJS(),
+    user: state.auth.get('user')
   };
 }
 
-export default connect(mapStateToProps, { ...userActions })(Profile);
+export default connect(mapStateToProps, { fetchProfile })(Profile);

@@ -2,6 +2,7 @@ import React from 'react';
 import { Router, Route, IndexRedirect } from 'react-router';
 
 import * as containers from './containers';
+import Login from './auth/containers/Login';
 
 export default (history) =>
   <Router history={history}>
@@ -12,5 +13,5 @@ export default (history) =>
       <Route path="projects" component={containers.Projects} />
       <Route path="achievements" component={containers.Achievements} />
     </Route>
-    <Route path="/login" component={containers.Login} />
+    <Route path="/login" component={Login} />
   </Router>;
