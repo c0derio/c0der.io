@@ -1,4 +1,5 @@
 import url from 'url';
+import moment from 'moment';
 import { fromJS } from 'immutable';
 
 import * as constants from './constants';
@@ -6,6 +7,7 @@ import createReducer from '../utils/createReducer';
 
 const initialState = {
   error: null,
+  expiresAt: null,
   isRefreshing: false,
   isAuthenticated: false,
   isAuthenticating: false,
@@ -37,6 +39,7 @@ export default createReducer(fromJS(initialState), {
       user: action.payload.user,
       idToken: action.payload.idToken,
       accessToken: action.payload.accessToken,
+      expiresAt: action.payload.expiresAt,
       issuer: url.parse(action.payload.decodedToken.iss).hostname,
       returnTo: action.payload.returnTo
     }),

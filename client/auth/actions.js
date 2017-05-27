@@ -1,4 +1,5 @@
 import axios from 'axios';
+import moment from 'moment';
 import jwtDecode from 'jwt-decode';
 import { routeActions } from 'redux-simple-router';
 
@@ -16,7 +17,31 @@ function isExpired(decodedToken) {
   return !(d.valueOf() > (new Date().valueOf() + (1000)));
 }
 
-const handleTokens = (dispatch, getTokensPromise, location, refreshing) =>
+const refreshTokens = (dispatch, getState, location) => {
+  if (getState().auth.get('isRefreshing'))
+    return Promise.reject(new Error('Need to handle multi-request for refresh'));
+
+  dispatch({
+    type: constants.REFRESH_PENDING
+  });
+
+  return handleTokens(dispatch, getState, redirect(location, null, 'none'), location, true /* refreshing
+   only */);
+};
+
+const dispatchSuccess = (dispatch, idToken, accessToken, decodedToken, expiresAt, returnTo) => dispatch({
+    type: constants.LOGIN_SUCCESS,
+    payload: {
+      idToken,
+      accessToken,
+      decodedToken,
+      expiresAt,
+      user: decodedToken,
+      returnTo
+    }
+  });
+
+const handleTokens = (dispatch, getState, getTokensPromise, location, refreshing) =>
   getTokensPromise
     .then((tokens) => {
       if (!tokens) {
@@ -43,30 +68,34 @@ const handleTokens = (dispatch, getTokensPromise, location, refreshing) =>
         return dispatch(routeActions.push('/login'));
       }
 
-      const decodedAccessToken = jwtDecode(accessToken);
-      if (isExpired(decodedAccessToken)) {
-        dispatch({
-          type: constants.LOGIN_FAILED
-        });
-        return dispatch(routeActions.push('/login'));
-      }
-
       axios.defaults.headers.common.Authorization = `Bearer ${accessToken}`;
+
+      axios.interceptors.request.use((config) => {
+        /* Proactively refresh expired tokens rather than waiting for a 401 */
+        const aboutToRequestTime = moment().unix();
+        const expiresAt = getState().auth.get('expiresAt');
+
+        if (aboutToRequestTime >= expiresAt) {
+          // renewToken performs authentication using username/password saved in sessionStorage/localStorage
+          return refreshTokens(dispatch, getState, location)
+            .then(() => {
+              config.headers.Authorization = axios.defaults.headers.common.Authorization;
+              return config;
+            });
+        }
+
+        return config;
+      }, (error) => {
+        Promise.reject(error);
+      });
 
       axios.interceptors.response.use(response => response, (error) => {
         const value = error.response;
 
         if (value.status === 401 && value.data.message === 'TokenExpired') {
-          console.log('Token JWT expired, renew...');
-
-          dispatch({
-            type: constants.REFRESH_PENDING
-          });
-
           // renewToken performs authentication using username/password saved in sessionStorage/localStorage
-          return handleTokens(dispatch, redirect(location, null, prompt), location, true /* refreshing only */)
+          return refreshTokens(dispatch, getState, location)
             .then(() => {
-              console.log('Re-sending the request...', error.config);
               error.config.headers.Authorization = axios.defaults.headers.common.Authorization;
               return axios.request(error.config);
             });
@@ -75,40 +104,15 @@ const handleTokens = (dispatch, getTokensPromise, location, refreshing) =>
         return Promise.reject(error);
       });
 
-      // const expiresIn = tokens.expiresIn || 10;
-      // let timeout = (expiresIn * 1000) - 60000;
-      // if (timeout < 10000) timeout = 10000; /* refresh only every 10 seconds at the most */
-      // console.log('Carlos, timeout: ', timeout, ', tokens: ', tokens);
-      // setTimeout(() => {
-      //   dispatch({
-      //     type: constants.REFRESH_PENDING
-      //   });
-      //   return handleTokens(dispatch, redirect(location, null, prompt), location, true /* refreshing only */);
-      // }, timeout);
+      const now = moment().unix();
+      const expiresIn = tokens.expiresIn > 70 ? tokens.expiresIn - 60 : 10;
+      const expiresAt = now + expiresIn;
 
       if (refreshing) {
-        return dispatch({
-          type: constants.LOGIN_SUCCESS,
-          payload: {
-            idToken,
-            accessToken,
-            decodedToken,
-            user: decodedToken,
-            returnTo: tokens.returnTo
-          }
-        });
+        return dispatchSuccess(dispatch, idToken, accessToken, decodedToken, expiresAt, tokens.returnTo);
       }
 
-      dispatch({
-        type: constants.LOGIN_SUCCESS,
-        payload: {
-          idToken,
-          accessToken,
-          decodedToken,
-          user: decodedToken,
-          returnTo: tokens.returnTo
-        }
-      });
+      dispatchSuccess(dispatch, idToken, accessToken, decodedToken, expiresAt, tokens.returnTo);
 
       return dispatch(routeActions.push(tokens.returnTo));
     })
@@ -137,11 +141,11 @@ const handleTokens = (dispatch, getTokensPromise, location, refreshing) =>
     });
 
 export function login(location, prompt) {
-  return (dispatch) => {
+  return (dispatch, getState) => {
     dispatch({
       type: constants.LOGIN_PENDING
     });
-    return handleTokens(dispatch, redirect(location, null, prompt), location);
+    return handleTokens(dispatch, getState, redirect(location, null, prompt), location);
   };
 }
 
@@ -160,12 +164,12 @@ export function logout(location) {
 }
 
 export function loadCredentials(location) {
-  return (dispatch) => {
+  return (dispatch, getState) => {
     if (window.location.hash) {
       dispatch({
         type: constants.LOGIN_PENDING
       });
-      return handleTokens(dispatch, parseHash(window.location.hash), location);
+      return handleTokens(dispatch, getState, parseHash(window.location.hash), location);
     }
 
     return Promise.resolve();

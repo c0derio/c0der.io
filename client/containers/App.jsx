@@ -28,7 +28,6 @@ class App extends Component {
 
   componentWillMount() {
     const sub = this.props.user.get('sub');
-    console.log("Carlos, sub: ", sub);
     this.props.fetchProfile(sub);
     this.props.fetchAchievements(sub);
     this.props.fetchProjects(sub);

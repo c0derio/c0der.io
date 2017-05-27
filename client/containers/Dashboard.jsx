@@ -63,7 +63,7 @@ class Dashboard extends Component {
           <div className="row">
             <h3>Projects</h3>
             <div className="col-xs-12 wrapper">
-              <ProjectsTable projects={projects} />
+              <ProjectsTable projects={projects} loading={loading} />
             </div>
           </div>
         </LoadingPanel>
