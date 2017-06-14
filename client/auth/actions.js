@@ -18,28 +18,29 @@ function isExpired(decodedToken) {
 }
 
 const refreshTokens = (dispatch, getState, location) => {
-  if (getState().auth.get('isRefreshing'))
+  if (getState().auth.get('isRefreshing')) {
     return Promise.reject(new Error('Need to handle multi-request for refresh'));
+  }
 
   dispatch({
     type: constants.REFRESH_PENDING
   });
 
-  return handleTokens(dispatch, getState, redirect(location, null, 'none'), location, true /* refreshing
-   only */);
+  // eslint-ignore-line no-use-before-define
+  return handleTokens(dispatch, getState, redirect(location, null, 'none'), location, true); // eslint-disable-line no-use-before-define
 };
 
 const dispatchSuccess = (dispatch, idToken, accessToken, decodedToken, expiresAt, returnTo) => dispatch({
-    type: constants.LOGIN_SUCCESS,
-    payload: {
-      idToken,
-      accessToken,
-      decodedToken,
-      expiresAt,
-      user: decodedToken,
-      returnTo
-    }
-  });
+  type: constants.LOGIN_SUCCESS,
+  payload: {
+    idToken,
+    accessToken,
+    decodedToken,
+    expiresAt,
+    user: decodedToken,
+    returnTo
+  }
+});
 
 const handleTokens = (dispatch, getState, getTokensPromise, location, refreshing) =>
   getTokensPromise

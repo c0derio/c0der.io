@@ -31,7 +31,7 @@ config.plugins = config.plugins.concat([
     allChunks: true
   }),
 
-  // Separate the vender in a different file.
+  // Separate the vendor in a different file.
   new webpack.optimize.CommonsChunkPlugin({
     name: 'vendors',
     filename: 'c0derio.ui.vendors.' + project.version + '.js'

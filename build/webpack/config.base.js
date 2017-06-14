@@ -8,6 +8,7 @@ module.exports = {
 
   // The application and the vendor libraries.
   entry: {
+    bootstrap: path.resolve(__dirname, '../../bootstrap/bootstrapAuth.js'),
     app: path.resolve(__dirname, '../../client/app.jsx'),
     vendors: [
       'axios',
@@ -34,7 +35,7 @@ module.exports = {
   // Output directory.
   output: {
     path: path.resolve(__dirname, '../../dist'),
-    filename: 'bundle.js',
+    filename: '[name].bundle.js',
     publicPath: '/app/'
   },
 

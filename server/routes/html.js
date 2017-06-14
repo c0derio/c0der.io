@@ -26,7 +26,30 @@ export default () => {
   <script type="text/javascript" src="//cdn.auth0.com/manage/v0.3.1672/js/bundle.js"></script>
   <script type="text/javascript">window.config = <%- JSON.stringify(config) %>;</script>
   <% if (assets.vendors) { %><script type="text/javascript" src="/app/<%= assets.vendors %>"></script><% } %>
-  <% if (assets.app) { %><script type="text/javascript" src="/app/<%= assets.app %>"></script><% } %>
+  <% if (assets.bootstrap) { %><script type="text/javascript" src="/app/<%= assets.bootstrap %>"></script><% } %>
+  <script type="text/javascript">
+    /* call bootstrap here */
+    var loadScript = function(src, onload) {
+      var script = document.createElement('script');
+      script.onload = onload;
+      script.src = src;
+      document.head.appendChild(script);
+    }
+    bootstrapAuth({
+        domain: window.config.AUTH0_DOMAIN,
+        redirectUri: window.location.href.split("#")[0],
+        responseType: 'token id_token',
+        audience: window.config.C0DERIO_AUDIENCE,
+        scope: 'openid profile email read:users read:achievements read:projects',
+        clientID: window.config.AUTH0_CLIENT_ID
+      }, 
+      function(err, authResult) { 
+        console.log("Carlos, results: ", err, authResult); 
+        console.log("Carlos, location: ", window.location);
+        loadScript("/app/<%= assets.app %>");
+      });
+      console.log("Done processing bootstrapAuth");
+  </script>
   <% if (assets.version) { %>
   <script type="text/javascript" src="//cdn.auth0.com/extensions/auth0-delegated-admin/assets/auth0-delegated-admin.ui.vendors.<%= assets.version %>.js"></script>
   <script type="text/javascript" src="//cdn.auth0.com/extensions/auth0-delegated-admin/assets/auth0-delegated-admin.ui.<%= assets.version %>.js"></script>
@@ -68,7 +91,8 @@ export default () => {
         config: settings,
         assets: {
           customCss: config('CUSTOM_CSS'),
-          app: 'bundle.js'
+          app: 'app.bundle.js',
+          bootstrap: 'bootstrap.bundle.js'
         }
       };
 
