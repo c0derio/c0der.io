@@ -1,4 +1,4 @@
-import * as constants from '../constants';
+import * as constants from '../app/constants';
 
 export default function fetchAchievements(userId) {
   // const baseUrl = window.config.BASE_API_URL;

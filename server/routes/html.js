@@ -22,6 +22,7 @@ export default () => {
 </head>
 <body>
   <div id="app"></div>
+  <script src="http://cdn.auth0.com/js/auth0/8.8.0/auth0.min.js"></script>
   <script type="text/javascript">window.config = <%- JSON.stringify(config) %>;</script>
   <script type="text/javascript" src="<%= assets.prereq %>"></script>
   <script type="text/javascript">

@@ -1,5 +1,5 @@
 // import axios from 'axios';
-import * as constants from '../constants';
+import * as constants from '../app/constants';
 
 
 export default function fetchProjects(userId) {

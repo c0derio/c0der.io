@@ -3,7 +3,7 @@ import thunkMiddleware from 'redux-thunk';
 import promiseMiddleware from 'redux-promise-middleware';
 import { compose, createStore, applyMiddleware } from 'redux';
 
-import rootReducer from '../reducers';
+import rootReducer from '../rootReducer';
 import normalizeErrorMiddleware from '../middlewares/normalizeErrorMiddleware';
 import promiseSuccessMiddleware from '../middlewares/promiseSuccessMiddleware';
 import DevTools from '../containers/DevTools';
@@ -32,8 +32,8 @@ export default function configureStore(middlewares, initialState = { }) {
 
   // Enable Webpack hot module replacement for reducers.
   if (process.env.NODE_ENV !== 'production' && module.hot) {
-    module.hot.accept('../reducers', () => {
-      const nextRootReducer = require('../reducers'); // eslint-disable-line global-require
+    module.hot.accept('../rootReducer', () => {
+      const nextRootReducer = require('../rootReducer'); // eslint-disable-line global-require
       store.replaceReducer(nextRootReducer);
     });
   }

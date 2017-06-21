@@ -7,7 +7,7 @@ import {
   TableHeader,
   TableColumn,
   TableRow
-} from '../components/Dashboard';
+} from '../app/components/Dashboard';
 
 export default class ProjectsTable extends Component {
   static propTypes = {

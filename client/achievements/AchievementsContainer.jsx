@@ -1,9 +1,9 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 
-import { LoadingPanel, Error } from '../components/Dashboard';
+import { LoadingPanel, Error } from '../app/components/Dashboard';
 
-import './Dashboard.css';
+import '../dashboard/Dashboard.css';
 
 class Achievements extends Component {
   static propTypes = {

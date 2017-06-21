@@ -1,6 +1,6 @@
 import React, { PropTypes, Component } from 'react';
 import Select from 'react-select';
-import '../../../node_modules/react-select/dist/react-select.css';
+import '../../../../node_modules/react-select/dist/react-select.css';
 
 export default class MultiSelect extends Component {
   static propTypes = {

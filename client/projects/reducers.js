@@ -1,7 +1,7 @@
 import { fromJS } from 'immutable';
 
-import * as constants from '../constants';
-import createReducer from '../utils/createReducer';
+import * as constants from '../app/constants';
+import createReducer from '../app/utils/createReducer';
 
 const initialState = {
   loading: false,

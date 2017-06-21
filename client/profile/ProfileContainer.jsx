@@ -1,11 +1,11 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 
-import { LoadingPanel, Error } from '../components/Dashboard';
-import fetchProfile from '../actions/users';
+import { LoadingPanel, Error } from '../app/components/Dashboard';
+import fetchProfile from './actions';
 
 
-import './Dashboard.css';
+import '../dashboard/Dashboard.css';
 
 class Profile extends Component {
   static propTypes = {

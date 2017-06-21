@@ -2,10 +2,10 @@ import { combineReducers } from 'redux';
 import { reducer as formReducer } from 'redux-form';
 import { routeReducer } from 'redux-simple-router';
 
-import auth from '../auth/reducers';
-import profile from './profile';
+import auth from './auth/reducers';
+import profile from '../profile/reducers';
 import projects from '../projects/reducers';
-import achievements from './achievements';
+import achievements from '../achievements/reducers';
 
 function lastAction(state = null, action) {
   return action;
