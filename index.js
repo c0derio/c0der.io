@@ -24,6 +24,7 @@ nconf
   .env()
   .file(path.join(__dirname, './server/config.json'))
   .defaults({
+    AUTH0_PREREQ_URL: 'https://rawgit.com/sgmeyer/a8a61a9e5c53e637e60c00bf35740267/raw/87947ca0d902e105e82932a6592f61832131cb37/auth-prereq.min.js',
     DATA_CACHE_MAX_AGE: 1000 * 10,
     NODE_ENV: 'development',
     HOSTING_ENV: 'default',

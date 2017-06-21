@@ -16,8 +16,7 @@ config.entry = {
     'webpack-dev-server/client?http://' + WEBPACK_HOST + ':' + WEBPACK_PORT,
     'webpack/hot/only-dev-server',
     config.entry.app
-  ],
-  bootstrap: config.entry.bootstrap
+  ]
 };
 
 config.output.publicPath = `http://c0der.local:3001/${config.output.publicPath}`;

@@ -8,7 +8,6 @@ module.exports = {
 
   // The application and the vendor libraries.
   entry: {
-    bootstrap: path.resolve(__dirname, '../../bootstrap/bootstrapAuth.js'),
     app: path.resolve(__dirname, '../../client/app.jsx'),
     vendors: [
       'axios',

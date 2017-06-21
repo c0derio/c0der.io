@@ -18,15 +18,12 @@ export default () => {
   <link rel="stylesheet" type="text/css" href="https://cdn.auth0.com/manage/v0.3.1672/css/index.min.css" />
   <link rel="stylesheet" type="text/css" href="https://cdn.auth0.com/styleguide/4.6.13/index.min.css" />
   <% if (assets.style) { %><link rel="stylesheet" type="text/css" href="/app/<%= assets.style %>" /><% } %>
-  <% if (assets.version) { %><link rel="stylesheet" type="text/css" href="//cdn.auth0.com/extensions/auth0-delegated-admin/assets/auth0-delegated-admin.ui.<%= assets.version %>.css" /><% } %>
   <% if (assets.customCss) { %><link rel="stylesheet" type="text/css" href="<%= assets.customCss %>" /><% } %>
 </head>
 <body>
   <div id="app"></div>
-  <script type="text/javascript" src="//cdn.auth0.com/manage/v0.3.1672/js/bundle.js"></script>
   <script type="text/javascript">window.config = <%- JSON.stringify(config) %>;</script>
-  <% if (assets.vendors) { %><script type="text/javascript" src="/app/<%= assets.vendors %>"></script><% } %>
-  <% if (assets.bootstrap) { %><script type="text/javascript" src="/app/<%= assets.bootstrap %>"></script><% } %>
+  <script type="text/javascript" src="<%= assets.prereq %>"></script>
   <script type="text/javascript">
     /* call bootstrap here */
     var loadScript = function(src, onload) {
@@ -44,16 +41,14 @@ export default () => {
         clientID: window.config.AUTH0_CLIENT_ID
       }, 
       function(err, authResult) { 
-        console.log("Carlos, results: ", err, authResult); 
-        console.log("Carlos, location: ", window.location);
-        loadScript("/app/<%= assets.app %>");
+        loadScript("//cdn.auth0.com/manage/v0.3.1672/js/bundle.js", function () {
+          <% if (assets.vendors) { %>loadScript("/app/<%= assets.vendors %>", function () { <% } %>
+          loadScript("/app/<%= assets.app %>");
+          <% if (assets.vendors) { %>});<% } %>
+        });
       });
       console.log("Done processing bootstrapAuth");
   </script>
-  <% if (assets.version) { %>
-  <script type="text/javascript" src="//cdn.auth0.com/extensions/auth0-delegated-admin/assets/auth0-delegated-admin.ui.vendors.<%= assets.version %>.js"></script>
-  <script type="text/javascript" src="//cdn.auth0.com/extensions/auth0-delegated-admin/assets/auth0-delegated-admin.ui.<%= assets.version %>.js"></script>
-  <% } %>
 </body>
 </html>
   `;
@@ -73,35 +68,21 @@ export default () => {
       BASE_API_URL: config('BASE_API_URL')
     };
 
-    // Render from CDN.
-    const clientVersion = config('CLIENT_VERSION');
-    if (clientVersion) {
-      return res.send(ejs.render(template, {
-        config: settings,
-        assets: {
-          customCss: config('CUSTOM_CSS'),
-          version: clientVersion
-        }
-      }));
-    }
-
     // Render locally.
     return fs.readFile(config('MANIFEST_FILE'), 'utf8', (err, manifest) => {
       const locals = {
         config: settings,
         assets: {
-          customCss: config('CUSTOM_CSS'),
-          app: 'app.bundle.js',
-          bootstrap: 'bootstrap.bundle.js'
+          app: 'app.bundle.js'
         }
       };
 
       if (!err && manifest) {
-        locals.assets = {
-          customCss: config('CUSTOM_CSS'),
-          ...JSON.parse(manifest)
-        };
+        locals.assets = JSON.parse(manifest);
       }
+
+      locals.assets.prereq = config('AUTH0_PREREQ_URL');
+      locals.assets.customCss = config('CUSTOM_CSS');
 
       // Render the HTML page.
       res.send(ejs.render(template, locals));
