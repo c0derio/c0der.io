@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import { connect } from 'react-redux';
 
 import { LoadingPanel, Error } from '../components/Dashboard';
-import ProjectsTable from '../components/Projects/ProjectsTable';
+import ProjectsTable from '../projects/ProjectsTable';
 
 import './Dashboard.css';
 

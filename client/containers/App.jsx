@@ -3,7 +3,7 @@ import { connect } from 'react-redux';
 
 import fetchProfile from '../actions/users';
 import fetchAchievements from '../actions/achievements';
-import fetchProjects from '../actions/projects';
+import fetchProjects from '../projects/actions';
 
 import { logout } from '../auth/actions';
 

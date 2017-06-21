@@ -12,7 +12,7 @@ const config = require('./config.base.js');
 config.profile = false;
 
 // Build output, which includes the hash.
-config.output.filename = 'c0derio.ui.' + project.version + '.js';
+config.output.filename = 'c0derio.ui.[name].' + project.version + '.js';
 
 // Development modules.
 config.module.loaders.push({
@@ -64,7 +64,8 @@ config.plugins = config.plugins.concat([
       const chunks = {
         app: data.assetsByChunkName.app[0],
         style: data.assetsByChunkName.app[1],
-        vendors: data.assetsByChunkName.vendors
+        vendors: data.assetsByChunkName.vendors,
+        bootstrap: data.assetsByChunkName.bootstrap
       };
       return JSON.stringify(chunks);
     }

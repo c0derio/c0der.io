@@ -1,16 +1,13 @@
 import React, { Component } from 'react';
-import formatCurrency from 'format-currency';
 
 import {
   Table,
-  TableCell,
   TableRouteCell,
   TableBody,
-  TableTextCell,
   TableHeader,
   TableColumn,
   TableRow
-} from '../Dashboard';
+} from '../components/Dashboard';
 
 export default class ProjectsTable extends Component {
   static propTypes = {

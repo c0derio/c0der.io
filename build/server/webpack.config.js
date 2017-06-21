@@ -58,7 +58,7 @@ module.exports = externalModules.then((externals) => {
     entry: path.join(__dirname, '../../index'),
     target: 'node',
     output: {
-      path: './dist',
+      path: path.join(__dirname, '../../dist'),
       filename: 'c0derio.server.' + project.version + '.js',
       library: 'commonjs2'
     },

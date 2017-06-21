@@ -28,8 +28,6 @@ const checkNonce = (nonce) => {
 const redirectAuth = (webAuth, returnTo) => {
   const nonce = getNonce(returnTo);
   webAuth.authorize({ state: nonce, nonce });
-  console.log("Carlos, after authorize, location: ", global.window.location);
-  console.log("Carlos, after authorize, location2: ", window.location);
 };
 
 const processAuthResult = (err, authResult, webAuth, cb) => {

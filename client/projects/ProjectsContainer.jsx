@@ -3,7 +3,7 @@ import { connect } from 'react-redux';
 
 import { LoadingPanel, Error } from '../components/Dashboard';
 
-import './Dashboard.css';
+import '../containers/Dashboard.css';
 
 class Projects extends Component {
   static propTypes = {

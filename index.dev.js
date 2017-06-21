@@ -28,6 +28,8 @@ nconf
     NODE_ENV: 'development',
     HOSTING_ENV: 'default',
     PORT: 3000,
+    MANIFEST_FILE: 'junk.json',
+    STATIC_DIR: path.join(__dirname, './dist'),
     TITLE: 'c0der.io connect with your coding peers'
   });
 
